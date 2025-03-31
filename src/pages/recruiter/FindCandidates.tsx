@@ -141,7 +141,8 @@ const FindCandidates = () => {
   const getProfileImageUrl = (candidate: typeof mockApplicants[0]) => {
     // In a real app, this would be an actual image URL from LinkedIn
     // For now, we're using a placeholder image based on the candidate's id
-    return `https://randomuser.me/api/portraits/${candidate.id % 2 === 0 ? 'men' : 'women'}/${candidate.id % 10}.jpg`;
+    const candidateIdNum = parseInt(candidate.id);
+    return `https://randomuser.me/api/portraits/${candidateIdNum % 2 === 0 ? 'men' : 'women'}/${candidateIdNum % 10}.jpg`;
   };
 
   return (
