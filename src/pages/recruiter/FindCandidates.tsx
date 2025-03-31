@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 import { mockApplicants } from "@/data/mockData";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { SendHorizontal } from "lucide-react";
@@ -137,6 +137,13 @@ const FindCandidates = () => {
       .toUpperCase();
   };
 
+  // Helper function to get profile image URL for candidates
+  const getProfileImageUrl = (candidate: typeof mockApplicants[0]) => {
+    // In a real app, this would be an actual image URL from LinkedIn
+    // For now, we're using a placeholder image based on the candidate's id
+    return `https://randomuser.me/api/portraits/${candidate.id % 2 === 0 ? 'men' : 'women'}/${candidate.id % 10}.jpg`;
+  };
+
   return (
     <div className="container mx-auto py-10">
       <h1 className="text-3xl font-bold mb-8">Find Candidates</h1>
@@ -214,6 +221,7 @@ const FindCandidates = () => {
                       <Card key={candidate.id} className="p-4">
                         <div className="flex flex-col md:flex-row gap-4">
                           <Avatar className="h-16 w-16">
+                            <AvatarImage src={getProfileImageUrl(candidate)} alt={candidate.name} />
                             <AvatarFallback className="text-lg">
                               {getInitials(candidate.name)}
                             </AvatarFallback>
