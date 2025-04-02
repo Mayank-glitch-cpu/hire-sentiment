@@ -8,6 +8,9 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 8080,
+    watch: {
+      ignored: ['**/node_modules/**', '**/backend/Persona-Lens/venv/**', '**/backend/Persona-Lens/Dataset/**']
+    }
   },
   plugins: [
     react(),

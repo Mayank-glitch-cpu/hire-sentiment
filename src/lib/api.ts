@@ -51,4 +51,19 @@ export const getJobById = (jobId: string) =>
 export const createJob = (jobData: any) => 
   api.post('/jobs', jobData);
 
+// Application endpoints
+export const submitJobApplication = (jobId: string, applicationData: FormData) => {
+  return api.post(`/applications/apply/${jobId}`, applicationData, {
+    headers: {
+      'Content-Type': 'multipart/form-data' // Override for file uploads
+    }
+  });
+};
+
+export const getUserApplications = (userId: string) => 
+  api.get(`/applications/user/${userId}`);
+
+export const getApplicationDetails = (applicationId: string) =>
+  api.get(`/applications/${applicationId}`);
+
 // Add more API endpoints as needed
