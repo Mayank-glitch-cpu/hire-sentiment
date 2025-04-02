@@ -107,7 +107,7 @@ const JobApplicationForm: React.FC<JobApplicationFormProps> = ({
             <Label htmlFor="resume">Resume</Label>
             <FileUpload 
               onFileUpload={handleFileUpload} 
-              allowedTypes=".pdf,.doc,.docx"
+              allowedTypes={['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']}
               maxSizeMB={5}
             />
             {resumePath && (
