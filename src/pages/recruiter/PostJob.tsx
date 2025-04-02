@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
+import { createJob } from "@/lib/api";
 
 const PostJob = () => {
   const { user } = useAuth();
@@ -39,8 +40,10 @@ const PostJob = () => {
     setLoading(true);
     
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Call the API to create the job
+      const response = await createJob(jobData);
+      
+      console.log("Job creation response:", response);
       
       toast({
         title: "Job Posted Successfully",
@@ -49,6 +52,7 @@ const PostJob = () => {
       
       navigate("/recruiter/dashboard");
     } catch (error) {
+      console.error("Error posting job:", error);
       toast({
         title: "Failed to post job",
         description: "There was an error posting your job. Please try again.",

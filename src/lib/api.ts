@@ -1,3 +1,4 @@
+
 import axios from 'axios';
 
 // Get the base URL from environment variables or use a default
@@ -48,8 +49,13 @@ export const getJobs = () => api.get('/jobs');
 export const getJobById = (jobId: string) => 
   api.get(`/jobs/${jobId}`);
 
-export const createJob = (jobData: any) => 
-  api.post('/jobs', jobData);
+export const createJob = (jobData: {
+  title: string;
+  company: string;
+  location: string;
+  description: string;
+  requirements: string;
+}) => api.post('/jobs', jobData);
 
 // Application endpoints
 export const submitJobApplication = (jobId: string, applicationData: FormData) => {
