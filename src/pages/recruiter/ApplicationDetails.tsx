@@ -15,7 +15,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Briefcase, Calendar, ChevronLeft, Download, Mail, User } from "lucide-react";
 import { format } from "date-fns";
 import ProfileAnalysisCard from "@/components/ProfileAnalysisCard";
-import { api } from "@/lib/api";
+import api from "@/lib/api";
 
 interface Application {
   id: string;

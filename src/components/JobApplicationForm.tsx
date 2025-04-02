@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,7 +9,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Label } from "@/components/ui/label";
 import { Loader2 } from "lucide-react";
 import FileUpload from "@/components/FileUpload";
-import { api } from "@/lib/api";
+import api, { submitJobApplication } from "@/lib/api";
 
 interface JobApplicationFormProps {
   jobId: string;
@@ -105,10 +106,9 @@ const JobApplicationForm: React.FC<JobApplicationFormProps> = ({
           <div className="space-y-2">
             <Label htmlFor="resume">Resume</Label>
             <FileUpload 
-              onFileUploaded={handleFileUpload} 
-              acceptedFileTypes=".pdf,.doc,.docx"
+              onFileUpload={handleFileUpload} 
+              allowedTypes=".pdf,.doc,.docx"
               maxSizeMB={5}
-              uploadPath="resumes"
             />
             {resumePath && (
               <p className="text-sm text-green-600">

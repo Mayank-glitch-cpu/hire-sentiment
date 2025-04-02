@@ -5,7 +5,7 @@ import { FileIcon, FileText, Image, Upload, X } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
 
 interface FileUploadProps {
-  onFileUpload: (file: File) => void;
+  onFileUpload: (file: File | string) => void;
   value?: string | null;
   onClear?: () => void;
   allowedTypes?: string[];
