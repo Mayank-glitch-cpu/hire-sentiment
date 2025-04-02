@@ -12,6 +12,7 @@ export interface JobListing {
   featured?: boolean;
   closed?: boolean;
   postedDate: string;
+  postedBy?: string;
 }
 
 export interface Applicant {
