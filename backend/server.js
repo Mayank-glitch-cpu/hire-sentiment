@@ -4,9 +4,18 @@ const cors = require('cors');
 const app = express();
 const pool = require('./database'); // Import PostgreSQL connection
 
+// Import routes
+const authRoutes = require('./routes/auth');
+
 // Middleware
-app.use(cors({ origin: 'http://localhost:3000' })); // Allow React frontend
+app.use(cors({ 
+  origin: ['http://localhost:3000', 'http://localhost:5173', 'http://localhost:8081', 'http://localhost:8080'], // Allow React frontend and Vite dev server
+  credentials: true
+})); 
 app.use(express.json()); // Parse JSON request bodies
+
+// Routes
+app.use('/api/auth', authRoutes);
 
 // Test database connection endpoint
 app.get('/api/test-db', async (req, res) => {

@@ -1,11 +1,21 @@
-
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Search, Users, Briefcase, ArrowRight } from "lucide-react";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { testDbConnection } from "@/lib/api";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const Index = () => {
   const { user } = useAuth();
+  const [showConnectionTest, setShowConnectionTest] = useState(false);
+
+  const { data: connectionData, isLoading, isError, error, refetch } = useQuery({
+    queryKey: ['testConnection'],
+    queryFn: testDbConnection,
+    enabled: showConnectionTest, // Only run when user clicks the button
+  });
 
   const redirectToDashboard = () => {
     if (user) {
@@ -66,6 +76,40 @@ const Index = () => {
                   I'm a Job Seeker
                 </Link>
               </Button>
+            </div>
+
+            {/* Backend Connection Test */}
+            <div className="mt-8 flex flex-col items-center">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => {
+                  setShowConnectionTest(true);
+                  if (showConnectionTest) refetch();
+                }}
+              >
+                {isLoading ? "Testing..." : "Test Backend Connection"}
+              </Button>
+              
+              {showConnectionTest && !isLoading && (
+                <div className="mt-4 w-full max-w-lg">
+                  {isError ? (
+                    <Alert variant="destructive">
+                      <AlertTitle>Connection Failed</AlertTitle>
+                      <AlertDescription>
+                        Could not connect to the backend server. Error: {(error as Error)?.message || "Unknown error"}
+                      </AlertDescription>
+                    </Alert>
+                  ) : connectionData ? (
+                    <Alert variant="success" className="bg-green-50 border-green-200">
+                      <AlertTitle>Connection Successful!</AlertTitle>
+                      <AlertDescription>
+                        Successfully connected to the backend server at: {new Date(connectionData.data.timestamp).toLocaleString()}
+                      </AlertDescription>
+                    </Alert>
+                  ) : null}
+                </div>
+              )}
             </div>
           </div>
         </section>

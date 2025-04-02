@@ -1,13 +1,13 @@
-
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { toast } from "@/hooks/use-toast";
+import { loginUser, registerUser } from "@/lib/api";
 
 type UserRole = "applicant" | "recruiter";
 
 interface User {
   id: string;
   email: string;
-  name: string;
+  name?: string;
   role: UserRole;
 }
 
@@ -21,7 +21,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Mock users for demo
+// Mock users for fallback/development
 const MOCK_USERS: User[] = [
   { id: "1", email: "recruiter@example.com", name: "Demo Recruiter", role: "recruiter" },
   { id: "2", email: "applicant@example.com", name: "Demo Applicant", role: "applicant" },
@@ -44,22 +44,38 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setLoading(true);
     
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Call the real API endpoint
+      const response = await loginUser({ email, password });
       
-      const foundUser = MOCK_USERS.find(u => u.email === email && u.role === role);
-      
-      if (foundUser) {
-        setUser(foundUser);
-        localStorage.setItem("user", JSON.stringify(foundUser));
+      if (response.data.success) {
+        const loggedInUser = response.data.user;
+        setUser(loggedInUser);
+        localStorage.setItem("user", JSON.stringify(loggedInUser));
         toast({
           title: "Login successful",
-          description: `Welcome back, ${foundUser.name}!`,
+          description: `Welcome back${loggedInUser.name ? ', ' + loggedInUser.name : ''}!`,
         });
       } else {
-        throw new Error("Invalid credentials or role");
+        throw new Error(response.data.message || "Login failed");
       }
     } catch (error) {
+      console.error("Login error:", error);
+
+      // Fallback to mock data for development (remove in production)
+      if (process.env.NODE_ENV !== 'production') {
+        const foundUser = MOCK_USERS.find(u => u.email === email && u.role === role);
+        if (foundUser) {
+          setUser(foundUser);
+          localStorage.setItem("user", JSON.stringify(foundUser));
+          toast({
+            title: "Login successful (MOCK)",
+            description: `Welcome back, ${foundUser.name}!`,
+          });
+          setLoading(false);
+          return;
+        }
+      }
+
       toast({
         title: "Login failed",
         description: error instanceof Error ? error.message : "An unknown error occurred",
@@ -75,31 +91,27 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setLoading(true);
     
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Call the real API endpoint
+      const response = await registerUser({ email, password, role });
       
-      // Check if user already exists
-      if (MOCK_USERS.some(u => u.email === email)) {
-        throw new Error("User already exists");
+      if (response.data.success) {
+        const newUser = response.data.user;
+
+        // Add name to user object since our backend doesn't store names at registration
+        const userWithName = { ...newUser, name };
+        
+        setUser(userWithName);
+        localStorage.setItem("user", JSON.stringify(userWithName));
+        
+        toast({
+          title: "Registration successful",
+          description: `Welcome, ${name}!`,
+        });
+      } else {
+        throw new Error(response.data.message || "Registration failed");
       }
-      
-      const newUser: User = {
-        id: Math.random().toString(36).substr(2, 9),
-        email,
-        name,
-        role,
-      };
-      
-      // In a real app, you would save this to a database
-      // For demo, we'll just set it in state
-      setUser(newUser);
-      localStorage.setItem("user", JSON.stringify(newUser));
-      
-      toast({
-        title: "Registration successful",
-        description: `Welcome, ${name}!`,
-      });
     } catch (error) {
+      console.error("Registration error:", error);
       toast({
         title: "Registration failed",
         description: error instanceof Error ? error.message : "An unknown error occurred",

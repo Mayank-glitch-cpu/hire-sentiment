@@ -1,4 +1,7 @@
 -- 001_create_tables.sql
+-- Add pgvector extension
+CREATE EXTENSION IF NOT EXISTS vector;
+
 CREATE TABLE users (
   id SERIAL PRIMARY KEY,
   email VARCHAR(255) UNIQUE NOT NULL,
