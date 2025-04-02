@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -242,7 +241,9 @@ const RecruiterDashboard = () => {
                       <div className="flex items-center gap-2">
                         <h3 className="font-semibold text-lg">{job.title}</h3>
                         {job.featured && (
-                          <Badge variant="secondary" className="text-xs">Featured</Badge>
+                          <Badge variant="outline" className={job.featured ? "bg-yellow-100" : ""}>
+                            {job.featured ? "Featured" : "Standard"}
+                          </Badge>
                         )}
                       </div>
                       <p className="text-sm text-muted-foreground">{job.company} • {job.location}</p>

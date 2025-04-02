@@ -1,4 +1,3 @@
-
 export interface JobListing {
   id: string;
   title: string;
@@ -6,8 +5,13 @@ export interface JobListing {
   location: string;
   description: string;
   requirements: string[];
+  salary?: string;
+  experience?: string;
+  type?: string;
+  skills?: string[];
+  featured?: boolean;
+  closed?: boolean;
   postedDate: string;
-  postedBy: string;
 }
 
 export interface Applicant {
@@ -38,6 +42,12 @@ export const mockJobListings: JobListing[] = [
       "Knowledge of Redux or other state management solutions",
       "Experience with testing frameworks"
     ],
+    salary: "$120,000",
+    experience: "5+ years",
+    type: "Full-time",
+    skills: ["JavaScript", "React", "TypeScript", "Node.js", "GraphQL"],
+    featured: true,
+    closed: false,
     postedDate: "2023-07-15",
     postedBy: "1"
   },
@@ -54,6 +64,12 @@ export const mockJobListings: JobListing[] = [
       "Experience with containerization and orchestration",
       "Familiarity with AWS or other cloud platforms"
     ],
+    salary: "$100,000",
+    experience: "4+ years",
+    type: "Full-time",
+    skills: ["Python", "Django", "FastAPI", "SQL", "NoSQL"],
+    featured: false,
+    closed: true,
     postedDate: "2023-07-20",
     postedBy: "1"
   },
@@ -70,6 +86,12 @@ export const mockJobListings: JobListing[] = [
       "Familiarity with MongoDB or PostgreSQL",
       "Understanding of RESTful API design principles"
     ],
+    salary: "$110,000",
+    experience: "3+ years",
+    type: "Part-time",
+    skills: ["JavaScript", "TypeScript", "React", "Vue", "Node.js", "MongoDB"],
+    featured: true,
+    closed: false,
     postedDate: "2023-07-25",
     postedBy: "1"
   }

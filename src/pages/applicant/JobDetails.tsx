@@ -114,18 +114,18 @@ const JobDetails = () => {
                     {job.company} • {job.location}
                   </CardDescription>
                 </div>
-                <Badge variant="outline" className="mt-1">{job.type}</Badge>
+                <Badge variant="outline" className="mt-1">{job.type || 'Full-time'}</Badge>
               </div>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-3 gap-4 mb-6">
                 <div>
                   <h3 className="text-sm font-semibold">Salary</h3>
-                  <p className="text-md">{job.salary}</p>
+                  <p className="text-md">{job.salary || 'Competitive'}</p>
                 </div>
                 <div>
                   <h3 className="text-sm font-semibold">Experience</h3>
-                  <p className="text-md">{job.experience}</p>
+                  <p className="text-md">{job.experience || 'Not specified'}</p>
                 </div>
                 <div>
                   <h3 className="text-sm font-semibold">Posted</h3>
@@ -151,7 +151,7 @@ const JobDetails = () => {
                 <div>
                   <h3 className="text-lg font-semibold mb-2">Skills</h3>
                   <div className="flex flex-wrap gap-2">
-                    {job.skills.map((skill, index) => (
+                    {(job.skills || []).map((skill, index) => (
                       <Badge key={index} variant="secondary">{skill}</Badge>
                     ))}
                   </div>

@@ -1,7 +1,7 @@
 
 import React, { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { FilePdf, FileText, Image, Upload, X } from 'lucide-react';
+import { FileIcon, FileText, Image, Upload, X } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
 
 interface FileUploadProps {
@@ -93,7 +93,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
     if (!fileName) return null;
 
     if (fileName.endsWith('.pdf')) {
-      return <FilePdf className="h-5 w-5 text-red-500" />;
+      return <FileIcon className="h-5 w-5 text-red-500" />;
     } else if (fileName.endsWith('.doc') || fileName.endsWith('.docx')) {
       return <FileText className="h-5 w-5 text-blue-500" />;
     } else if (fileName.endsWith('.png') || fileName.endsWith('.jpg') || fileName.endsWith('.jpeg')) {
