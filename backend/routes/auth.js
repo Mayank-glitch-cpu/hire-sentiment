@@ -1,3 +1,4 @@
+
 // backend/routes/auth.js
 const express = require('express');
 const router = express.Router();
@@ -149,5 +150,56 @@ router.post('/login', async (req, res) => {
     });
   }
 });
+
+// Utility function to verify token for other routes to use
+router.verifyToken = (req, res, next) => {
+  const bearerHeader = req.headers['authorization'];
+  
+  if (!bearerHeader) {
+    console.log('No authorization header found');
+    return res.status(401).json({ 
+      success: false, 
+      message: 'Access denied. No token provided.' 
+    });
+  }
+  
+  try {
+    const bearer = bearerHeader.split(' ');
+    const token = bearer[1];
+    
+    console.log('Verifying token:', token.substring(0, 15) + '...');
+    
+    // Handle special mock tokens for development environment
+    if (process.env.NODE_ENV !== 'production' && token.startsWith('mock_token_')) {
+      console.log('Processing mock token');
+      // Extract user details from mock token
+      // Format: mock_token_userId_role (e.g., mock_token_1_recruiter)
+      const tokenParts = token.split('_');
+      if (tokenParts.length >= 4) {
+        const userId = tokenParts[2];
+        const role = tokenParts[3];
+        
+        console.log(`Mock token validated with userId: ${userId}, role: ${role}`);
+        req.user = { id: userId, role: role };
+        return next();
+      }
+    }
+    
+    // Normal JWT verification
+    const secret = process.env.JWT_SECRET || 'your_jwt_secret';
+    console.log('Using JWT secret:', secret.substring(0, 3) + '...');
+    
+    const decoded = jwt.verify(token, secret);
+    console.log('Token verified successfully for user:', decoded.id);
+    req.user = decoded;
+    next();
+  } catch (error) {
+    console.error('Token verification error:', error.message);
+    res.status(401).json({ 
+      success: false, 
+      message: 'Invalid token.' 
+    });
+  }
+};
 
 module.exports = router;

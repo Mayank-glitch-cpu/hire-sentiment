@@ -1,3 +1,4 @@
+
 import axios from 'axios';
 
 // Get the base URL from environment variables or use a default
@@ -15,9 +16,23 @@ const api = axios.create({
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('authToken');
   if (token) {
+    console.log('Adding auth token to request:', token.substring(0, 15) + '...');
     config.headers.Authorization = `Bearer ${token}`;
+  } else {
+    console.log('No auth token found in localStorage');
   }
   return config;
+}, (error) => {
+  console.error('Request interceptor error:', error);
+  return Promise.reject(error);
+});
+
+// Add a response interceptor for debugging
+api.interceptors.response.use((response) => {
+  return response;
+}, (error) => {
+  console.error('API error response:', error.response?.data || error.message);
+  return Promise.reject(error);
 });
 
 export default api;
@@ -54,7 +69,10 @@ export const createJob = (jobData: {
   location: string;
   description: string;
   requirements: string;
-}) => api.post('/jobs', jobData);
+}) => {
+  console.log('Creating job with data:', jobData);
+  return api.post('/jobs', jobData);
+};
 
 // Application endpoints
 export const submitJobApplication = (jobId: string, applicationData: FormData) => {

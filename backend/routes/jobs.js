@@ -1,53 +1,19 @@
+
 // backend/routes/jobs.js
 const express = require('express');
 const router = express.Router();
 const pool = require('../database');
 const jwt = require('jsonwebtoken');
+const authRoutes = require('./auth');
 
-// Middleware to verify JWT token and extract user information
-const verifyToken = (req, res, next) => {
-  const bearerHeader = req.headers['authorization'];
-  
-  if (!bearerHeader) {
-    return res.status(401).json({ 
-      success: false, 
-      message: 'Access denied. No token provided.' 
-    });
-  }
-  
-  try {
-    const bearer = bearerHeader.split(' ');
-    const token = bearer[1];
-    
-    // Handle special mock tokens for development environment
-    if (process.env.NODE_ENV !== 'production' && token.startsWith('mock_token_')) {
-      // Extract user details from mock token
-      // Format: mock_token_userId_role (e.g., mock_token_1_recruiter)
-      const tokenParts = token.split('_');
-      if (tokenParts.length >= 4) {
-        const userId = tokenParts[2];
-        const role = tokenParts[3];
-        
-        req.user = { id: userId, role: role };
-        return next();
-      }
-    }
-    
-    // Normal JWT verification
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your_jwt_secret');
-    req.user = decoded;
-    next();
-  } catch (error) {
-    console.error('Token verification error:', error.message);
-    res.status(400).json({ 
-      success: false, 
-      message: 'Invalid token.' 
-    });
-  }
-};
+// Use the verifyToken middleware from auth routes
+const verifyToken = authRoutes.verifyToken;
 
 // Create a new job
 router.post('/', verifyToken, async (req, res) => {
+  console.log('Creating new job:', req.body);
+  console.log('User from token:', req.user);
+  
   const { title, company, location, description, requirements } = req.body;
   const recruiterId = req.user.id;
   
@@ -61,6 +27,7 @@ router.post('/', verifyToken, async (req, res) => {
   
   // Ensure the user is a recruiter
   if (req.user.role !== 'recruiter') {
+    console.log('Non-recruiter attempted to create job:', req.user.role);
     return res.status(403).json({
       success: false,
       message: 'Only recruiters can create job listings'
@@ -79,6 +46,7 @@ router.post('/', verifyToken, async (req, res) => {
       requirementsArray = [];
     }
     
+    console.log('Inserting job with recruiter_id:', recruiterId);
     const result = await pool.query(
       `INSERT INTO jobs 
        (recruiter_id, title, company, location, description, requirements, created_at, updated_at) 
@@ -87,6 +55,7 @@ router.post('/', verifyToken, async (req, res) => {
       [recruiterId, title, company, location, description, requirementsArray]
     );
     
+    console.log('Job created successfully:', result.rows[0]);
     res.status(201).json({
       success: true,
       message: 'Job created successfully',
