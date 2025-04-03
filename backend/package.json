@@ -5,6 +5,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "migrate": "node-pg-migrate",
+    "run-migrations": "node run-migrations.js",
     "dev": "node server.js",
     "start": "node server.js"
   },
