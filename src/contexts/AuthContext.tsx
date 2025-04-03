@@ -34,6 +34,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     // Check for saved user in localStorage
     const savedUser = localStorage.getItem("user");
+    const token = localStorage.getItem("authToken");
+    
     if (savedUser) {
       setUser(JSON.parse(savedUser));
     }
@@ -51,6 +53,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const loggedInUser = response.data.user;
         setUser(loggedInUser);
         localStorage.setItem("user", JSON.stringify(loggedInUser));
+        
+        // Store the token for API authorization
+        if (response.data.token) {
+          localStorage.setItem("authToken", response.data.token);
+        }
+        
         toast({
           title: "Login successful",
           description: `Welcome back${loggedInUser.name ? ', ' + loggedInUser.name : ''}!`,
@@ -67,6 +75,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (foundUser) {
           setUser(foundUser);
           localStorage.setItem("user", JSON.stringify(foundUser));
+          
+          // Create a simple mock token that our modified middleware can read
+          // Format: mock_token_userId_role
+          const mockToken = `mock_token_${foundUser.id}_${foundUser.role}`;
+          localStorage.setItem("authToken", mockToken);
+          
           toast({
             title: "Login successful (MOCK)",
             description: `Welcome back, ${foundUser.name}!`,
@@ -103,6 +117,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUser(userWithName);
         localStorage.setItem("user", JSON.stringify(userWithName));
         
+        // Store the token for API authorization
+        if (response.data.token) {
+          localStorage.setItem("authToken", response.data.token);
+        }
+        
         toast({
           title: "Registration successful",
           description: `Welcome, ${name}!`,
@@ -126,6 +145,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const logout = () => {
     setUser(null);
     localStorage.removeItem("user");
+    localStorage.removeItem("authToken"); // Also remove the auth token when logging out
     toast({
       title: "Logged out",
       description: "You have been successfully logged out.",

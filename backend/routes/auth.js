@@ -3,6 +3,7 @@ const express = require('express');
 const router = express.Router();
 const pool = require('../database');
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken'); // Make sure jwt is imported
 
 // Register a new user
 router.post('/register', async (req, res) => {
@@ -39,6 +40,17 @@ router.post('/register', async (req, res) => {
 
     console.log('User created successfully:', newUser.rows[0].id);
 
+    // Create token for the new user
+    const token = jwt.sign(
+      { 
+        id: newUser.rows[0].id,
+        email: newUser.rows[0].email,
+        role: newUser.rows[0].role
+      },
+      process.env.JWT_SECRET || 'your_jwt_secret',
+      { expiresIn: '24h' }
+    );
+
     // If user is an applicant, create an empty applicant profile
     if (role === 'applicant') {
       console.log('Creating applicant profile for user:', newUser.rows[0].id);
@@ -52,6 +64,7 @@ router.post('/register', async (req, res) => {
     res.status(201).json({
       success: true,
       message: 'User registered successfully',
+      token: token,
       user: {
         id: newUser.rows[0].id,
         email: newUser.rows[0].email,
@@ -104,10 +117,22 @@ router.post('/login', async (req, res) => {
 
     console.log('Login successful:', user.id);
 
-    // Send user details (excluding password)
+    // Generate JWT token
+    const token = jwt.sign(
+      { 
+        id: user.id,
+        email: user.email,
+        role: user.role
+      },
+      process.env.JWT_SECRET || 'your_jwt_secret',
+      { expiresIn: '24h' }
+    );
+
+    // Send user details and token
     res.json({
       success: true,
       message: 'Login successful',
+      token: token,
       user: {
         id: user.id,
         email: user.email,

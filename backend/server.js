@@ -10,6 +10,7 @@ const authRoutes = require('./routes/auth');
 const profileRoutes = require('./routes/profile');
 const applicationsRoutes = require('./routes/applications');
 const personaLensRoutes = require('./routes/persona-lens');
+const jobsRoutes = require('./routes/jobs');
 
 // Ensure uploads directory exists
 const uploadsDir = path.join(__dirname, 'uploads');
@@ -80,6 +81,7 @@ app.use('/api/auth', authRoutes);
 app.use(profileRoutes);
 app.use('/api/applications', applicationsRoutes);
 app.use('/api/persona-lens', personaLensRoutes);
+app.use('/api/jobs', jobsRoutes);
 
 // Test database connection endpoint
 app.get('/api/test-db', async (req, res) => {

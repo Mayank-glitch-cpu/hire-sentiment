@@ -1,4 +1,3 @@
-
 import axios from 'axios';
 
 // Get the base URL from environment variables or use a default
