@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { toast } from "@/hooks/use-toast";
 import { loginUser, registerUser } from "@/lib/api";
@@ -145,7 +146,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const logout = () => {
     setUser(null);
     localStorage.removeItem("user");
-    localStorage.removeItem("authToken"); // Also remove the auth token when logging out
+    localStorage.removeItem("authToken");
     toast({
       title: "Logged out",
       description: "You have been successfully logged out.",
