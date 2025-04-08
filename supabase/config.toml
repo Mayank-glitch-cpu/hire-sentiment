@@ -1,1 +1,8 @@
+
 project_id = "mqkxdgadhlrsdvyfudbf"
+
+[functions.search-candidates]
+verify_jwt = true
+
+[functions.import-github-users]
+verify_jwt = true

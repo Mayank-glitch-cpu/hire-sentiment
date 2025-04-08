@@ -1,14 +1,14 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
-import { mockApplicants } from "@/data/mockData";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { SendHorizontal } from "lucide-react";
+import { SendHorizontal, Loader2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Message {
   text: string;
@@ -16,18 +16,47 @@ interface Message {
   timestamp: number;
 }
 
+interface Candidate {
+  id: string;
+  username: string;
+  name: string | null;
+  bio: string | null;
+  experience_years: number | null;
+  popularity_score: number | null;
+  languages: Record<string, any> | null;
+  skills: string[] | null;
+  public_repos: number | null;
+  total_stars: number | null;
+  followers: number | null;
+  location: string | null;
+  github_url: string | null;
+  similarity: number;
+}
+
+interface EnhancedResults {
+  analysis: string;
+  topCandidates: {
+    username: string;
+    matchReason: string;
+    strengths: string[];
+    potential_concerns: string[];
+  }[];
+}
+
 const FindCandidates = () => {
   const { user } = useAuth();
+  const { toast } = useToast();
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     {
-      text: "Hello! I'm your AI talent assistant. Ask me to find candidates matching specific skills or requirements.",
+      text: "Hello! I'm your AI talent assistant powered by Gemini. Ask me to find candidates matching specific skills or requirements.",
       sender: "ai",
       timestamp: Date.now(),
     },
   ]);
-  const [results, setResults] = useState<typeof mockApplicants>([]);
+  const [results, setResults] = useState<Candidate[]>([]);
+  const [enhancedResults, setEnhancedResults] = useState<EnhancedResults | null>(null);
 
   if (!user || user.role !== "recruiter") {
     return (
@@ -51,42 +80,26 @@ const FindCandidates = () => {
     setLoading(true);
     
     try {
-      // Simulate API call with a delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Call the Supabase edge function for search
+      const { data, error } = await supabase.functions.invoke('search-candidates', {
+        body: { query }
+      });
       
-      // Mock search functionality
-      let searchResults = [];
-      const lowercaseQuery = query.toLowerCase();
-      
-      // Simple search algorithm based on keywords
-      if (lowercaseQuery.includes("python")) {
-        searchResults = mockApplicants.filter(applicant => 
-          applicant.skills.some(skill => skill.toLowerCase().includes("python"))
-        );
-      } else if (lowercaseQuery.includes("react") || lowercaseQuery.includes("frontend")) {
-        searchResults = mockApplicants.filter(applicant => 
-          applicant.skills.some(skill => 
-            ["react", "javascript", "typescript", "frontend"].includes(skill.toLowerCase())
-          )
-        );
-      } else if (lowercaseQuery.includes("top") || lowercaseQuery.includes("best")) {
-        // If asking for top candidates, return all sorted by number of skills
-        searchResults = [...mockApplicants].sort((a, b) => b.skills.length - a.skills.length);
-        if (lowercaseQuery.includes("3")) {
-          searchResults = searchResults.slice(0, 3);
-        } else {
-          searchResults = searchResults.slice(0, Math.min(5, searchResults.length));
-        }
-      } else {
-        // Default to returning all candidates
-        searchResults = mockApplicants;
+      if (error) {
+        throw new Error(error.message);
       }
       
-      setResults(searchResults);
+      if (!data.success) {
+        throw new Error(data.message || 'Unknown error occurred');
+      }
+      
+      // Update state with search results
+      setResults(data.candidates || []);
+      setEnhancedResults(data.enhancedResults || null);
       
       // Generate AI response
       const aiResponse: Message = {
-        text: generateAIResponse(query, searchResults),
+        text: data.enhancedResults?.analysis || generateDefaultResponse(data.candidates || []),
         sender: "ai",
         timestamp: Date.now(),
       };
@@ -97,19 +110,25 @@ const FindCandidates = () => {
       console.error("Error searching candidates:", error);
       
       const errorMessage: Message = {
-        text: "Sorry, I encountered an error while searching for candidates. Please try again.",
+        text: `Sorry, I encountered an error while searching for candidates: ${error.message}. Please try again.`,
         sender: "ai",
         timestamp: Date.now(),
       };
       
       setMessages(prev => [...prev, errorMessage]);
+      
+      toast({
+        title: "Search Error",
+        description: "Failed to search for candidates. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
   };
 
-  const generateAIResponse = (query: string, results: typeof mockApplicants) => {
-    if (results.length === 0) {
+  const generateDefaultResponse = (candidates: Candidate[]): string => {
+    if (candidates.length === 0) {
       return "I couldn't find any candidates matching your criteria. Try broadening your search or using different keywords.";
     }
     
@@ -117,19 +136,19 @@ const FindCandidates = () => {
     let response = "";
     
     if (queryLower.includes("python")) {
-      response = `I found ${results.length} Python developers matching your criteria. You can see their profiles in the Candidates tab.`;
+      response = `I found ${candidates.length} Python developers matching your criteria. You can see their profiles in the Candidates tab.`;
     } else if (queryLower.includes("react") || queryLower.includes("frontend")) {
-      response = `I found ${results.length} frontend developers with React experience. Check out their profiles in the Candidates tab.`;
+      response = `I found ${candidates.length} frontend developers with React experience. Check out their profiles in the Candidates tab.`;
     } else if (queryLower.includes("top") || queryLower.includes("best")) {
       response = `Here are the top candidates based on skill match and experience. You can review their complete profiles in the Candidates tab.`;
     } else {
-      response = `I found ${results.length} candidates that might match your needs. You can explore their profiles in the Candidates tab.`;
+      response = `I found ${candidates.length} candidates that might match your needs. You can explore their profiles in the Candidates tab.`;
     }
     
     return response;
   };
 
-  const getInitials = (name: string) => {
+  const getInitials = (name: string = "User"): string => {
     return name
       .split(" ")
       .map(part => part[0])
@@ -138,11 +157,27 @@ const FindCandidates = () => {
   };
 
   // Helper function to get profile image URL for candidates
-  const getProfileImageUrl = (candidate: typeof mockApplicants[0]) => {
-    // In a real app, this would be an actual image URL from LinkedIn
-    // For now, we're using a placeholder image based on the candidate's id
-    const candidateIdNum = parseInt(candidate.id);
-    return `https://randomuser.me/api/portraits/${candidateIdNum % 2 === 0 ? 'men' : 'women'}/${candidateIdNum % 10}.jpg`;
+  const getProfileImageUrl = (candidate: Candidate): string => {
+    // If the candidate has a GitHub username, use GitHub avatar URL
+    if (candidate.username) {
+      return `https://github.com/${candidate.username}.png`;
+    }
+    
+    // Otherwise use a placeholder image
+    const candidateId = parseInt(candidate.id.substring(0, 8), 16);
+    return `https://randomuser.me/api/portraits/${candidateId % 2 === 0 ? 'men' : 'women'}/${candidateId % 10}.jpg`;
+  };
+
+  const formatLanguages = (languages: Record<string, any> | null): JSX.Element[] => {
+    if (!languages) return [];
+    
+    return Object.entries(languages)
+      .slice(0, 5)
+      .map(([lang, value], i) => (
+        <Badge key={i} variant="secondary" className="font-normal">
+          {lang} {typeof value === 'number' && value > 1 ? `(${value})` : ''}
+        </Badge>
+      ));
   };
 
   return (
@@ -209,69 +244,128 @@ const FindCandidates = () => {
                       className="flex-1"
                     />
                     <Button type="submit" size="icon" disabled={loading}>
-                      <SendHorizontal className="h-4 w-4" />
+                      {loading ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <SendHorizontal className="h-4 w-4" />
+                      )}
                     </Button>
                   </form>
                 </div>
               </TabsContent>
               
               <TabsContent value="candidates" className="flex-1 overflow-y-auto mt-0 data-[state=active]:flex data-[state=active]:flex-col p-0">
+                {enhancedResults && enhancedResults.topCandidates.length > 0 && (
+                  <div className="p-4 bg-blue-50 dark:bg-blue-950 border-b">
+                    <h3 className="font-semibold mb-2">Top Candidates Analysis</h3>
+                    <p className="text-sm mb-3">{enhancedResults.analysis}</p>
+                    <div className="space-y-3">
+                      {enhancedResults.topCandidates.map((candidate, idx) => (
+                        <div key={idx} className="text-sm border-l-2 border-blue-500 pl-3">
+                          <div className="font-medium">{candidate.username}</div>
+                          <div className="italic">{candidate.matchReason}</div>
+                          <div className="mt-1">
+                            <span className="font-medium">Strengths: </span>
+                            {candidate.strengths.join(', ')}
+                          </div>
+                          {candidate.potential_concerns.length > 0 && (
+                            <div>
+                              <span className="font-medium">Considerations: </span>
+                              {candidate.potential_concerns.join(', ')}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              
                 <div className="space-y-4 p-4">
                   {results.length > 0 ? (
                     results.map((candidate) => (
                       <Card key={candidate.id} className="p-4">
                         <div className="flex flex-col md:flex-row gap-4">
                           <Avatar className="h-16 w-16">
-                            <AvatarImage src={getProfileImageUrl(candidate)} alt={candidate.name} />
+                            <AvatarImage src={getProfileImageUrl(candidate)} alt={candidate.name || candidate.username} />
                             <AvatarFallback className="text-lg">
-                              {getInitials(candidate.name)}
+                              {getInitials(candidate.name || candidate.username)}
                             </AvatarFallback>
                           </Avatar>
                           
                           <div className="flex-1">
-                            <h3 className="text-xl font-semibold">{candidate.name}</h3>
-                            <p className="text-sm text-muted-foreground mb-2">{candidate.email}</p>
+                            <div className="flex justify-between items-start">
+                              <div>
+                                <h3 className="text-xl font-semibold">{candidate.name || candidate.username}</h3>
+                                <p className="text-sm text-muted-foreground">
+                                  {candidate.location && `${candidate.location} • `}
+                                  {candidate.experience_years && `${candidate.experience_years} years experience`}
+                                </p>
+                              </div>
+                              {candidate.similarity && (
+                                <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100">
+                                  {Math.round(candidate.similarity * 100)}% match
+                                </Badge>
+                              )}
+                            </div>
                             
-                            <div className="grid md:grid-cols-2 gap-4">
+                            {candidate.bio && (
+                              <p className="text-sm my-2">{candidate.bio}</p>
+                            )}
+                            
+                            <div className="grid md:grid-cols-2 gap-4 mt-3">
+                              <div>
+                                <h4 className="font-medium text-sm">Languages</h4>
+                                <div className="flex flex-wrap gap-1 mt-1">
+                                  {formatLanguages(candidate.languages)}
+                                </div>
+                              </div>
+                              
                               <div>
                                 <h4 className="font-medium text-sm">Skills</h4>
                                 <div className="flex flex-wrap gap-1 mt-1">
-                                  {candidate.skills.map((skill, index) => (
+                                  {candidate.skills?.map((skill, index) => (
                                     <Badge key={index} variant="secondary" className="font-normal">
                                       {skill}
                                     </Badge>
                                   ))}
                                 </div>
                               </div>
-                              
-                              <div>
-                                <h4 className="font-medium text-sm">Experience</h4>
-                                <ul className="text-sm mt-1">
-                                  {candidate.experience.map((exp, index) => (
-                                    <li key={index}>{exp}</li>
-                                  ))}
-                                </ul>
-                              </div>
                             </div>
                             
                             <div className="mt-4 grid md:grid-cols-2 gap-4">
                               <div>
-                                <h4 className="font-medium text-sm">Education</h4>
-                                <ul className="text-sm mt-1">
-                                  {candidate.education.map((edu, index) => (
-                                    <li key={index}>{edu}</li>
-                                  ))}
-                                </ul>
+                                <h4 className="font-medium text-sm">Stats</h4>
+                                <div className="text-sm mt-1 grid grid-cols-2 gap-2">
+                                  <div>Repositories: {candidate.public_repos || 0}</div>
+                                  <div>Stars: {candidate.total_stars || 0}</div>
+                                  <div>Followers: {candidate.followers || 0}</div>
+                                  <div>Popularity: {candidate.popularity_score ? `${Math.round(candidate.popularity_score * 10)}/10` : 'N/A'}</div>
+                                </div>
                               </div>
                               
                               <div>
-                                <h4 className="font-medium text-sm">Profiles</h4>
-                                <div className="text-sm mt-1 space-y-1">
-                                  <p>GitHub: <a href={`https://${candidate.github}`} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">{candidate.github}</a></p>
-                                  <p>LinkedIn: <a href={`https://${candidate.linkedin}`} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">{candidate.linkedin}</a></p>
-                                  <p>LeetCode: <a href={`https://${candidate.leetcode}`} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">{candidate.leetcode}</a></p>
+                                <h4 className="font-medium text-sm">Links</h4>
+                                <div className="text-sm mt-1">
+                                  {candidate.github_url && (
+                                    <p>
+                                      <a 
+                                        href={candidate.github_url} 
+                                        target="_blank" 
+                                        rel="noopener noreferrer" 
+                                        className="text-primary hover:underline flex items-center gap-1"
+                                      >
+                                        GitHub Profile
+                                      </a>
+                                    </p>
+                                  )}
                                 </div>
                               </div>
+                            </div>
+                            
+                            <div className="mt-4 pt-3 border-t flex justify-end">
+                              <Button variant="outline" size="sm">
+                                View Full Profile
+                              </Button>
                             </div>
                           </div>
                         </div>

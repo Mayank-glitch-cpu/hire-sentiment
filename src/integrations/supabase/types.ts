@@ -9,13 +9,236 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      github_users: {
+        Row: {
+          bio: string | null
+          created_at: string | null
+          embedding: string | null
+          experience_years: number | null
+          followers: number | null
+          github_url: string | null
+          id: string
+          languages: Json | null
+          location: string | null
+          name: string | null
+          popularity_score: number | null
+          profile_data: Json | null
+          public_repos: number | null
+          skills: string[] | null
+          total_stars: number | null
+          updated_at: string | null
+          username: string
+        }
+        Insert: {
+          bio?: string | null
+          created_at?: string | null
+          embedding?: string | null
+          experience_years?: number | null
+          followers?: number | null
+          github_url?: string | null
+          id?: string
+          languages?: Json | null
+          location?: string | null
+          name?: string | null
+          popularity_score?: number | null
+          profile_data?: Json | null
+          public_repos?: number | null
+          skills?: string[] | null
+          total_stars?: number | null
+          updated_at?: string | null
+          username: string
+        }
+        Update: {
+          bio?: string | null
+          created_at?: string | null
+          embedding?: string | null
+          experience_years?: number | null
+          followers?: number | null
+          github_url?: string | null
+          id?: string
+          languages?: Json | null
+          location?: string | null
+          name?: string | null
+          popularity_score?: number | null
+          profile_data?: Json | null
+          public_repos?: number | null
+          skills?: string[] | null
+          total_stars?: number | null
+          updated_at?: string | null
+          username?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
-      [_ in never]: never
+      github_user_profiles: {
+        Row: {
+          bio: string | null
+          experience_years: number | null
+          followers: number | null
+          github_url: string | null
+          id: string | null
+          languages: Json | null
+          location: string | null
+          name: string | null
+          popularity_score: number | null
+          profile_data: Json | null
+          public_repos: number | null
+          skills: string[] | null
+          total_stars: number | null
+          username: string | null
+        }
+        Insert: {
+          bio?: string | null
+          experience_years?: number | null
+          followers?: number | null
+          github_url?: string | null
+          id?: string | null
+          languages?: Json | null
+          location?: string | null
+          name?: string | null
+          popularity_score?: number | null
+          profile_data?: Json | null
+          public_repos?: number | null
+          skills?: string[] | null
+          total_stars?: number | null
+          username?: string | null
+        }
+        Update: {
+          bio?: string | null
+          experience_years?: number | null
+          followers?: number | null
+          github_url?: string | null
+          id?: string | null
+          languages?: Json | null
+          location?: string | null
+          name?: string | null
+          popularity_score?: number | null
+          profile_data?: Json | null
+          public_repos?: number | null
+          skills?: string[] | null
+          total_stars?: number | null
+          username?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
-      [_ in never]: never
+      binary_quantize: {
+        Args: { "": unknown } | { "": string }
+        Returns: unknown
+      }
+      halfvec_avg: {
+        Args: { "": number[] }
+        Returns: unknown
+      }
+      halfvec_out: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      halfvec_send: {
+        Args: { "": unknown }
+        Returns: string
+      }
+      halfvec_typmod_in: {
+        Args: { "": unknown[] }
+        Returns: number
+      }
+      hnsw_bit_support: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      hnsw_halfvec_support: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      hnsw_sparsevec_support: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      hnswhandler: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      ivfflat_bit_support: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      ivfflat_halfvec_support: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      ivfflathandler: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      l2_norm: {
+        Args: { "": unknown } | { "": unknown }
+        Returns: number
+      }
+      l2_normalize: {
+        Args: { "": unknown } | { "": string } | { "": unknown }
+        Returns: unknown
+      }
+      match_github_users: {
+        Args: {
+          query_embedding: string
+          match_threshold: number
+          match_count: number
+        }
+        Returns: {
+          id: string
+          username: string
+          name: string
+          bio: string
+          experience_years: number
+          popularity_score: number
+          languages: Json
+          skills: string[]
+          public_repos: number
+          total_stars: number
+          followers: number
+          location: string
+          github_url: string
+          similarity: number
+        }[]
+      }
+      sparsevec_out: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      sparsevec_send: {
+        Args: { "": unknown }
+        Returns: string
+      }
+      sparsevec_typmod_in: {
+        Args: { "": unknown[] }
+        Returns: number
+      }
+      vector_avg: {
+        Args: { "": number[] }
+        Returns: string
+      }
+      vector_dims: {
+        Args: { "": unknown } | { "": string }
+        Returns: number
+      }
+      vector_norm: {
+        Args: { "": string }
+        Returns: number
+      }
+      vector_out: {
+        Args: { "": string }
+        Returns: unknown
+      }
+      vector_send: {
+        Args: { "": string }
+        Returns: string
+      }
+      vector_typmod_in: {
+        Args: { "": unknown[] }
+        Returns: number
+      }
     }
     Enums: {
       [_ in never]: never
