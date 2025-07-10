@@ -1,4 +1,4 @@
-# Hire Sentiment
+# Hire Sentiment [Demo](https://www.youtube.com/watch?v=CKlaSQfaLH4&t=10s)
 
 A modern job recruitment platform that connects recruiters with job seekers, featuring sentiment analysis for better matching.
 
